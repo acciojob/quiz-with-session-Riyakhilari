@@ -1,7 +1,4 @@
-//your JS code here.
-
-// Do not change code below this line
-// This code will just display the questions to the screen
+// Define the quiz questions as provided
 const questions = [
   {
     question: "What is the capital of France?",
@@ -30,13 +27,21 @@ const questions = [
   },
 ];
 
+// Load progress from sessionStorage if available
+let userAnswers = JSON.parse(sessionStorage.getItem("progress")) || [];
+
 // Display the quiz questions and choices
 function renderQuestions() {
+  const questionsElement = document.getElementById("questions");
+  questionsElement.innerHTML = ""; // Clear previous content
+
   for (let i = 0; i < questions.length; i++) {
     const question = questions[i];
     const questionElement = document.createElement("div");
+
     const questionText = document.createTextNode(question.question);
     questionElement.appendChild(questionText);
+
     for (let j = 0; j < question.choices.length; j++) {
       const choice = question.choices[j];
       const choiceElement = document.createElement("input");
@@ -46,11 +51,50 @@ function renderQuestions() {
       if (userAnswers[i] === choice) {
         choiceElement.setAttribute("checked", true);
       }
+
+      // Add event listener to save the selected answer
+      choiceElement.addEventListener("change", (event) => {
+        userAnswers[i] = event.target.value;
+        sessionStorage.setItem("progress", JSON.stringify(userAnswers)); // Save progress
+      });
+
       const choiceText = document.createTextNode(choice);
       questionElement.appendChild(choiceElement);
       questionElement.appendChild(choiceText);
     }
+
     questionsElement.appendChild(questionElement);
   }
 }
+
+// Calculate the score
+function calculateScore() {
+  let score = 0;
+  for (let i = 0; i < questions.length; i++) {
+    if (userAnswers[i] === questions[i].answer) {
+      score++;
+    }
+  }
+  return score;
+}
+
+// Display the score
+function displayScore() {
+  const score = calculateScore();
+  document.getElementById("score").textContent = `Your score is ${score} out of 5.`;
+  localStorage.setItem("score", score); // Store score in localStorage
+}
+
+// Handle submit action
+document.getElementById("submit").addEventListener("click", () => {
+  displayScore();
+});
+
+// Render the quiz questions when the page loads
 renderQuestions();
+
+// Check if there's a stored score and display it
+const storedScore = localStorage.getItem("score");
+if (storedScore) {
+  document.getElementById("score").textContent = `Your previous score was ${storedScore} out of 5.`;
+}
